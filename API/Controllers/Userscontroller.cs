@@ -2,16 +2,18 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using API.DTOs;
 using API.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class Userscontroller : ControllerBase
+    [Authorize]
+    public class UsersController : ControllerBase
     {
         private readonly IUserRepository _userRepository;
-        public Userscontroller(IUserRepository userRepository)
+        public UsersController(IUserRepository userRepository)
         {
             _userRepository = userRepository;
         }
