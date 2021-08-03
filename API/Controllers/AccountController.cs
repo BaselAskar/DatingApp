@@ -12,11 +12,11 @@ namespace API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class AccontController : ControllerBase
+    public class AccountController : ControllerBase
     {
         private readonly DataContext _data;
         private readonly ITokenServices _tokenServices;
-        public AccontController(DataContext data,ITokenServices tokenServices)
+        public AccountController(DataContext data,ITokenServices tokenServices)
         {
             _data = data;
             _tokenServices = tokenServices;
