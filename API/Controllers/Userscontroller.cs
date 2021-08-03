@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using API.DTOs;
@@ -79,6 +80,30 @@ namespace API.Controllers
             }
 
             return BadRequest("Uploading photo is failed");
+        }
+
+        [HttpDelete("delete-photo/{publicId}")]
+        public async Task<IActionResult> DeletePhoto(string publicId)
+        {
+            var user = await _userRepository.GetUserByUserNameAsync(User.GetUserName());
+
+            var photo = user.Photos.FirstOrDefault(p => p.PublicId == publicId);
+            if (photo == null) return NotFound();
+            if (photo.IsMain) return BadRequest("It is not Allowed to delete a main photo");
+
+            if (photo.PublicId != null)
+            {
+                 var result = await _photoServices.DeletePhotoAsync(publicId);
+            
+                if (result.Error != null) return BadRequest(result.Error.Message);
+
+            }
+
+            user.Photos.Remove(photo);
+
+            if (await _userRepository.SaveAllAsync()) return NoContent();
+
+            return BadRequest("Faild to delete the photo");
         }
     }
 }
