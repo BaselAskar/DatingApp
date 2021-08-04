@@ -105,5 +105,23 @@ namespace API.Controllers
 
             return BadRequest("Faild to delete the photo");
         }
+
+        [HttpPut("set-main-photo/{photoId}")]
+        public async Task<IActionResult> SetMainPhoto(int photoId)
+        {
+            var user = await _userRepository.GetUserByUserNameAsync(User.GetUserName());
+
+            var photo = user.Photos.FirstOrDefault(u => u.Id == photoId);
+            if (photo.IsMain) return BadRequest("This photo is already main");
+
+            var currentMain = user.Photos.FirstOrDefault(u => u.IsMain);
+            if (currentMain != null) currentMain.IsMain = false;
+
+            photo.IsMain = true;
+
+            if (await _userRepository.SaveAllAsync()) return NoContent();
+
+            return BadRequest("Faild to set main photo");
+        }
     }
 }
