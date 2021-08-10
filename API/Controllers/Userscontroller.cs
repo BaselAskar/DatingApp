@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
 {
+    [ServiceFilter(typeof(LogUserActivity))]
     [ApiController]
     [Route("api/[controller]")]
     [Authorize]
@@ -32,6 +33,12 @@ namespace API.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<MemberDto>>> GetMembers([FromQuery]UserParams userParams)
         {
+            var user = await _userRepository.GetUserByUserNameAsync(User.GetUserName());
+            userParams.currentUserName = user.UserName;
+
+            if (string.IsNullOrEmpty(userParams.Gender))
+                userParams.Gender = user.Gender == "male"?"female":"male";
+
             var users = await _userRepository.GetMembersAsync(userParams);
 
             Response.AddPaginationHeader(userParams.PageNumber,userParams.PageSize,users.Count,users.TotalPages);
