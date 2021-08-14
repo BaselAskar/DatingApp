@@ -14,6 +14,8 @@ namespace API.Extensions
         {
             services.Configure<CloudinarySettings>(config.GetSection("CloudinarySettings"));
             services.AddScoped<ITokenServices,TokenServices>();
+            services.AddScoped<ILikesRepository,LikesRepository>();
+            services.AddScoped<IMessageRepository,MessageRepository>();
             services.AddScoped<IUserRepository,UserRepository>();
             services.AddScoped<IPhotoServices,PhotoServices>();
             services.AddScoped<LogUserActivity>();
