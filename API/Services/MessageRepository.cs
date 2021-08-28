@@ -23,6 +23,10 @@ namespace API.Services
             _data = data;
         }
 
+        public void AddGroup(Group group)
+        {
+            _data.Groups.Add(group);
+        }
 
         public void AddMessage(Message message)
         {
@@ -32,10 +36,32 @@ namespace API.Services
         {
             _data.Messages.Remove(message);
         }
+
+        public async Task<Connection> GetConnection(string connectionId)
+        {
+            return await _data.Connections.FindAsync(connectionId);
+        }
+
+        public async Task<Group> GetGroupForConnection(string connectionId)
+        {
+            return await _data.Groups
+                .Include(c => c.Connections)
+                .Where(c => c.Connections.Any(x => x.ConnectionId == connectionId))
+                .FirstOrDefaultAsync();
+        }
+
         public async Task<Message> GetMessage(int id)
         {
             return await _data.Messages.FindAsync(id);
         }
+
+        public async Task<Group> GetMessageGroup(string groupName)
+        {
+            return await _data.Groups
+                    .Include(x => x.Connections)
+                    .FirstOrDefaultAsync(x => x.Name == groupName);
+        }
+
         public async Task<PageList<MessageDto>> GetMessagesForUser(MessageParams messageParams)
         {
             var query = _data.Messages
@@ -56,8 +82,8 @@ namespace API.Services
 
         }
 
-         public async Task<IEnumerable<MessageDto>> GetMessageThread(string currentUserName, string reciepentUserName)
-         {
+        public async Task<IEnumerable<MessageDto>> GetMessageThread(string currentUserName, string reciepentUserName)
+        {
             var messages = await _data.Messages
                 .Include(u => u.Sender).ThenInclude(p => p.Photos)
                 .Include(u => u.Recipient).ThenInclude(p => p.Photos)
@@ -72,14 +98,24 @@ namespace API.Services
             {
                 foreach(var message in unreadMessages)
                 {
-                    message.DateRead = DateTime.Now;
+                    message.DateRead = DateTime.UtcNow;
                 }
             }
 
             await _data.SaveChangesAsync();
 
             return _mapper.Map<IEnumerable<MessageDto>>(messages);
-         }
+        }
+
+        public void RemoveConnection(Connection connection)
+        {
+            _data.Connections.Remove(connection);
+        }
+
+        public void RemoveGroup(Group group)
+        {
+            _data.Groups.Remove(group);
+        }
 
         public async Task<bool> SaveAllAsync()
         {
