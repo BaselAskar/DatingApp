@@ -16,26 +16,24 @@ namespace API.Controllers
     [Authorize]
     public class LikesController : ControllerBase
     {
-        private readonly IUserRepository _userRepository;
-        private readonly ILikesRepository _likesRepository;
-        public LikesController(IUserRepository userRepository, ILikesRepository likesrepository)
+        private readonly IUnitOfWork _unitOfWork;
+        public LikesController(IUnitOfWork unitOfWork)
         {
-            _userRepository = userRepository;
-            _likesRepository = likesrepository;
+            _unitOfWork = unitOfWork;
         }
 
         [HttpPost("{userName}")]
         public async Task<IActionResult> AddLike(string userName)
         {
             var sourceUserId = User.GetUserId();
-            var likedUser = await _userRepository.GetUserByUserNameAsync(userName);
-            var sourceUser = await _likesRepository.GetUserWithLikes(sourceUserId);
+            var likedUser = await _unitOfWork.UserRepository.GetUserByUserNameAsync(userName);
+            var sourceUser = await _unitOfWork.LikesRepository.GetUserWithLikes(sourceUserId);
 
             if (sourceUser.UserName == userName) return BadRequest("You can't like your self");
 
             if (likedUser == null) return NotFound("This user is not existed");
 
-            var userLike = await _likesRepository.GetUserLike(sourceUserId,likedUser.Id);
+            var userLike = await _unitOfWork.LikesRepository.GetUserLike(sourceUserId,likedUser.Id);
 
             if  (userLike != null) return BadRequest("You are already like this user");
 
@@ -47,7 +45,7 @@ namespace API.Controllers
 
             sourceUser.LikedUser.Add(userLike);
 
-            if (await _userRepository.SaveAllAsync()) return Ok();
+            if (await _unitOfWork.Complete()) return Ok();
 
             return BadRequest("Faild to like user");
         }
@@ -57,7 +55,7 @@ namespace API.Controllers
         {
             var userId = User.GetUserId();
             
-            return Ok(await _likesRepository.GetUserLikes(likeParams));
+            return Ok(await _unitOfWork.LikesRepository.GetUserLikes(likeParams));
         }
     }
 }

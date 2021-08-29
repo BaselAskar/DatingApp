@@ -61,7 +61,7 @@ namespace API
             app.UseCors(x => x.AllowAnyHeader()
                 .AllowAnyMethod()
                 .AllowCredentials()
-                .AllowAnyOrigin());
+                .WithOrigins("https://localhost:8080"));
 
             app.UseAuthentication();
 
